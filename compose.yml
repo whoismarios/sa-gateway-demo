@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  envoy:
+    image: envoyproxy/envoy:v1.25-latest
+    volumes:
+      - ./envoy/envoy.yaml:/etc/envoy/envoy.yaml
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+      - "9901:9901"
+    depends_on:
+      - rest-service
+      - grpc-service
+      - graphql-service
+
+  rest-service:
+    build: ./services/rest
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgres://user:pass@postgres:5432/sa-demo
+    depends_on:
+      - postgres
+
+  grpc-service:
+    build: ./services/grpc
+    ports:
+      - "50051:50051"
+    environment:
+      DATABASE_URL: postgres://user:pass@postgres:5432/sa-demo
+    depends_on:
+      - postgres
+
+  graphql-service:
+    build: ./services/graphql
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: postgres://user:pass@postgres:5432/sa-demo
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: sa-demo
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
