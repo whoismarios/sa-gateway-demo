@@ -226,7 +226,7 @@ npm start
 
 ## 📄 Lizenz
 
-Dieses Projekt wurde für das Modul "Software Architecture" an der Universität Stuttgart erstellt.
+Dieses Projekt wurde für das Modul "Software Architecture" von Prof. Dr. Münch an der Hochschule Reutlingen erstellt.
 
 ---
 
