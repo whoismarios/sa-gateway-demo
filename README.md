@@ -45,7 +45,7 @@ Eine vollständige Demonstration verschiedener API-Protokolle (REST, GraphQL, gR
 
 1. **Repository klonen:**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/whoismarios/sa-gateway-demo.git
    cd sa-gateway-demo
    ```
 
