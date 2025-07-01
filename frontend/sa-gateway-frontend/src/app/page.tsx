@@ -8,6 +8,8 @@ import Header from '../components/Header';
 import RequestCard from '../components/RequestCard';
 import RestCard from '../components/RestCard';
 import GraphQLCard from '../components/GraphQLCard';
+import OrdersDisplay from '../components/OrdersDisplay';
+import CompactOrdersDisplay from '../components/CompactOrdersDisplay';
 import ProtocolComparison from '../components/ProtocolComparison';
 import { ApiResponse, GraphQLField } from '../types/api';
 
@@ -22,6 +24,12 @@ const graphqlFields: GraphQLField[] = [
     name
     email
     createdAt
+    orders {
+      id
+      product
+      quantity
+      createdAt
+    }
   }
 }`
   },
@@ -37,6 +45,12 @@ const graphqlFields: GraphQLField[] = [
       avatar
       bio
     }
+    orders {
+      id
+      product
+      quantity
+      createdAt
+    }
   }
 }`
   },
@@ -49,6 +63,41 @@ const graphqlFields: GraphQLField[] = [
     name
     email
     matchScore
+    orders {
+      id
+      product
+      quantity
+      createdAt
+    }
+  }
+}`
+  },
+  {
+    id: 'orders',
+    name: 'Alle Bestellungen',
+    query: `{
+  orders {
+    id
+    product
+    quantity
+    createdAt
+    user {
+      id
+      name
+      email
+    }
+  }
+}`
+  },
+  {
+    id: 'ordersByUser',
+    name: 'Bestellungen nach User',
+    query: `query GetOrdersByUser($userId: ID!) {
+  ordersByUser(userId: $userId) {
+    id
+    product
+    quantity
+    createdAt
   }
 }`
   }
@@ -102,6 +151,8 @@ export default function Home() {
         body.variables = { id: userId };
       } else if (selectedField.id === 'searchUsers') {
         body.variables = { term: searchTerm };
+      } else if (selectedField.id === 'ordersByUser') {
+        body.variables = { userId: userId };
       }
 
       const res = await fetch('http://localhost:8080/graphql', {
@@ -137,7 +188,17 @@ export default function Home() {
             copiedStates={copiedStates}
             onCopyToClipboard={copyToClipboard}
           >
-            <RestCard />
+            <RestCard orders={results.rest?.data?.orders} />
+            {results.rest?.data?.orders && (
+              <div className="mt-3">
+                <CompactOrdersDisplay 
+                  orders={results.rest.data.orders} 
+                  title="REST Bestellungen" 
+                  showUserInfo={true}
+                  maxDisplay={3}
+                />
+              </div>
+            )}
           </RequestCard>
 
           {/* GraphQL Request */}
@@ -162,6 +223,32 @@ export default function Home() {
               searchTerm={searchTerm}
               onSearchTermChange={setSearchTerm}
             />
+            {results.graphql?.data?.data?.orders && (
+              <div className="mt-3">
+                <CompactOrdersDisplay 
+                  orders={results.graphql.data.data.orders} 
+                  title="GraphQL Bestellungen" 
+                  showUserInfo={true}
+                  maxDisplay={3}
+                />
+              </div>
+            )}
+            {results.graphql?.data?.data?.users && results.graphql.data.data.users.some((user: any) => user.orders?.length > 0) && (
+              <div className="mt-3">
+                <CompactOrdersDisplay 
+                  orders={results.graphql.data.data.users.flatMap((user: any) => 
+                    user.orders?.map((order: any) => ({
+                      ...order,
+                      userName: user.name,
+                      userEmail: user.email
+                    })) || []
+                  )} 
+                  title="GraphQL User Bestellungen" 
+                  showUserInfo={true}
+                  maxDisplay={3}
+                />
+              </div>
+            )}
           </RequestCard>
 
         </div>
